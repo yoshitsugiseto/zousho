@@ -113,24 +113,46 @@ export function AdminBooks() {
         if (!newIsbn.trim()) return
         setIsFetchingIsbn(true)
         try {
-            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${newIsbn}`)
-            const data = await res.json()
-            if (data.items && data.items.length > 0) {
-                const info = data.items[0].volumeInfo
+            // 1. まずOpenBD APIを試す (日本の書籍に強く、Vercel等からのアクセス制限が緩い)
+            const openBdRes = await fetch(`https://api.openbd.jp/v1/get?isbn=${newIsbn}`)
+            const openBdData = await openBdRes.json()
+
+            if (openBdData && openBdData.length > 0 && openBdData[0] !== null) {
+                const info = openBdData[0].summary
+                if (info.title) setNewTitle(info.title)
+                if (info.author) setNewAuthor(info.author)
+                if (info.cover) {
+                    setNewCoverUrl(info.cover.replace(/^http:/, 'https:'))
+                }
+                setIsFetchingIsbn(false)
+                return // OpenBDで見つかればここで終了
+            }
+
+            // 2. OpenBDで見つからなければGoogle Books APIにフォールバック
+            const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${newIsbn}`)
+            if (googleRes.status === 429) {
+                throw new Error('TOO_MANY_REQUESTS')
+            }
+            const googleData = await googleRes.json()
+            if (googleData.items && googleData.items.length > 0) {
+                const info = googleData.items[0].volumeInfo
                 if (info.title) setNewTitle(info.title)
                 if (info.authors && info.authors.length > 0) setNewAuthor(info.authors.join(', '))
                 if (info.imageLinks?.thumbnail) {
-                    // httpをhttpsに変換して保存
                     setNewCoverUrl(info.imageLinks.thumbnail.replace(/^http:/, 'https:'))
                 } else if (info.imageLinks?.smallThumbnail) {
                     setNewCoverUrl(info.imageLinks.smallThumbnail.replace(/^http:/, 'https:'))
                 }
             } else {
-                alert('入力されたISBNの書籍情報が見つかりませんでした。')
+                alert('入力されたISBNの書籍情報が見つかりませんでした。手動で入力してください。')
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error fetching ISBN:', err)
-            alert('書籍情報の取得に失敗しました。')
+            if (err.message === 'TOO_MANY_REQUESTS') {
+                alert('自動取得APIの利用制限(429)に達しました。しばらく待ってから試すか、手動で入力してください。')
+            } else {
+                alert('書籍情報の自動取得に失敗しました。手動で入力してください。')
+            }
         } finally {
             setIsFetchingIsbn(false)
         }
