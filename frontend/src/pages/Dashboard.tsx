@@ -160,7 +160,7 @@ export function Dashboard() {
 
     return (
         <div className="space-y-6 lg:max-w-5xl lg:mx-auto">
-            <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm pb-4 pt-4 -mt-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gray-200">
+            <div className="sticky top-16 z-10 bg-gray-50/95 backdrop-blur-sm pb-4 pt-4 -mt-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gray-200">
                 <div className="sm:flex sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-bold text-gray-900">みんなの本棚</h1>
                 </div>
