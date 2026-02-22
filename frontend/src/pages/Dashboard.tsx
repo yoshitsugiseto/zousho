@@ -13,20 +13,21 @@ interface BookWithStatus extends Book {
 }
 
 export function Dashboard() {
-    const { appUser } = useAuth()
+    const { appUser, loading: authLoading } = useAuth()
     const [books, setBooks] = useState<BookWithStatus[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [actionLoading, setActionLoading] = useState<string | null>(null)
 
     useEffect(() => {
+        if (authLoading) return // 認証状態の読み込み中は待機
         if (appUser) {
             fetchLibraryData()
         } else {
             // appUserが存在しない（DB不整合など）場合、ローディングを解除
             setLoading(false)
         }
-    }, [appUser])
+    }, [appUser, authLoading])
 
     const fetchLibraryData = async () => {
         setLoading(true)
@@ -175,7 +176,7 @@ export function Dashboard() {
                 />
             </div>
 
-            {loading ? (
+            {loading || authLoading ? (
                 <div className="flex justify-center items-center py-20 text-gray-500">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
                     読み込み中...
