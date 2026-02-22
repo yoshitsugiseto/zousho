@@ -301,30 +301,32 @@ export function AdminBooks() {
 
     return (
         <div className="space-y-6">
-            <div className="sm:flex sm:items-center sm:justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">書籍マスタ管理</h1>
-                <div className="mt-4 sm:mt-0">
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        新しい書籍を登録
-                    </button>
+            <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm pb-4 pt-4 -mt-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gray-200">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <h1 className="text-2xl font-bold text-gray-900">書籍マスタ管理</h1>
+                    <div className="mt-4 sm:mt-0">
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            新しい書籍を登録
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className="max-w-md relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                <div className="mt-4 max-w-md relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border bg-white"
+                        placeholder="タイトルや著者で検索..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
-                <input
-                    type="text"
-                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border"
-                    placeholder="タイトルや著者で検索..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
             </div>
 
             <div className="bg-white shadow overflow-hidden sm:rounded-md">

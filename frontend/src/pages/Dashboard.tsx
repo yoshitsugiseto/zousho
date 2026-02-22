@@ -160,21 +160,23 @@ export function Dashboard() {
 
     return (
         <div className="space-y-6 lg:max-w-5xl lg:mx-auto">
-            <div className="sm:flex sm:items-center sm:justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">みんなの本棚</h1>
-            </div>
-
-            <div className="relative rounded-md shadow-sm xl:w-1/2">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+            <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm pb-4 pt-4 -mt-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gray-200">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                    <h1 className="text-2xl font-bold text-gray-900">みんなの本棚</h1>
                 </div>
-                <input
-                    type="text"
-                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-3 shadow-sm border"
-                    placeholder="本のタイトルや著者で探す..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+
+                <div className="mt-4 relative rounded-md shadow-sm xl:w-1/2">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-3 shadow-sm border bg-white"
+                        placeholder="本のタイトルや著者で探す..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             {loading || authLoading ? (
