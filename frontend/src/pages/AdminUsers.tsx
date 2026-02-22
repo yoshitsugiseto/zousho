@@ -42,7 +42,7 @@ export function AdminUsers() {
 
         setIsInviting(true)
         try {
-            const { data, error } = await supabase.functions.invoke('admin-user-management', {
+            const { error } = await supabase.functions.invoke('admin-user-management', {
                 body: { action: 'invite', email: newEmail, displayName: newDisplayName }
             })
 
@@ -67,7 +67,7 @@ export function AdminUsers() {
         }
 
         try {
-            const { data, error } = await supabase.functions.invoke('admin-user-management', {
+            const { error } = await supabase.functions.invoke('admin-user-management', {
                 body: { action: 'delete', userId: user.id }
             })
 
@@ -82,7 +82,7 @@ export function AdminUsers() {
     }
 
     const filteredUsers = users.filter(u =>
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (u.display_name && u.display_name.toLowerCase().includes(searchQuery.toLowerCase()))
     )
 

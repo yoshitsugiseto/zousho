@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Book, BookItem, Loan, ReadingStatus } from '../types/database'
 import { useAuth } from '../hooks/useAuth'
