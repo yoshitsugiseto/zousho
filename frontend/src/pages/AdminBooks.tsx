@@ -9,6 +9,61 @@ interface BookWithStatus extends Book {
     activeLoans: (Loan & { user?: { email: string, display_name: string | null } })[] // 貸出中の記録
 }
 
+// -----------------------------------------------------------------------------
+// 外部API フェッチ用ヘルパー関数群 (コンポーネント外に分離して見通しを良くする)
+// -----------------------------------------------------------------------------
+interface FetchedBookInfo {
+    title: string;
+    author: string;
+    coverUrl: string;
+}
+
+const fetchFromGoogleBooks = async (isbn: string, apiKey: string): Promise<FetchedBookInfo | null> => {
+    try {
+        const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+            if (res.status === 429) console.warn('Google Books API: TOO_MANY_REQUESTS');
+            return null;
+        }
+
+        const data = await res.json();
+        if (!data.items?.length) return null;
+
+        const info = data.items[0].volumeInfo;
+        return {
+            title: info.title || '',
+            author: info.authors ? info.authors.join(', ') : '',
+            coverUrl: (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '').replace(/^http:/, 'https:')
+        };
+    } catch (err) {
+        console.error('Google Books API Error:', err);
+        return null; // エラー時はnullを返しフォールバックへ流す
+    }
+};
+
+const fetchFromOpenBD = async (isbn: string): Promise<FetchedBookInfo | null> => {
+    try {
+        const url = `https://api.openbd.jp/v1/get?isbn=${isbn}`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        if (!data || !data.length || data[0] === null) return null;
+
+        const info = data[0].summary;
+        return {
+            title: info.title || '',
+            author: info.author || '',
+            coverUrl: (info.cover || '').replace(/^http:/, 'https:')
+        };
+    } catch (err) {
+        console.error('OpenBD API Error:', err);
+        return null;
+    }
+};
+
 export function AdminBooks() {
     const [books, setBooks] = useState<BookWithStatus[]>([])
     const [loading, setLoading] = useState(true)
@@ -110,51 +165,37 @@ export function AdminBooks() {
     }
 
     const handleFetchIsbn = async () => {
-        if (!newIsbn.trim()) return
-        setIsFetchingIsbn(true)
+        const isbn = newIsbn.trim();
+        if (!isbn) return;
+
+        setIsFetchingIsbn(true);
         try {
-            // 1. まずOpenBD APIを試す (日本の書籍に強く、Vercel等からのアクセス制限が緩い)
-            const openBdRes = await fetch(`https://api.openbd.jp/v1/get?isbn=${newIsbn}`)
-            const openBdData = await openBdRes.json()
+            const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+            let bookInfo: FetchedBookInfo | null = null;
 
-            if (openBdData && openBdData.length > 0 && openBdData[0] !== null) {
-                const info = openBdData[0].summary
-                if (info.title) setNewTitle(info.title)
-                if (info.author) setNewAuthor(info.author)
-                if (info.cover) {
-                    setNewCoverUrl(info.cover.replace(/^http:/, 'https:'))
-                }
-                setIsFetchingIsbn(false)
-                return // OpenBDで見つかればここで終了
+            // 1. Google Books API を優先的に試す
+            if (apiKey) {
+                bookInfo = await fetchFromGoogleBooks(isbn, apiKey);
             }
 
-            // 2. OpenBDで見つからなければGoogle Books APIにフォールバック
-            const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${newIsbn}`)
-            if (googleRes.status === 429) {
-                throw new Error('TOO_MANY_REQUESTS')
+            // 2. Google Booksで見つからなかった場合、OpenBDにフォールバック
+            if (!bookInfo?.title) {
+                bookInfo = await fetchFromOpenBD(isbn);
             }
-            const googleData = await googleRes.json()
-            if (googleData.items && googleData.items.length > 0) {
-                const info = googleData.items[0].volumeInfo
-                if (info.title) setNewTitle(info.title)
-                if (info.authors && info.authors.length > 0) setNewAuthor(info.authors.join(', '))
-                if (info.imageLinks?.thumbnail) {
-                    setNewCoverUrl(info.imageLinks.thumbnail.replace(/^http:/, 'https:'))
-                } else if (info.imageLinks?.smallThumbnail) {
-                    setNewCoverUrl(info.imageLinks.smallThumbnail.replace(/^http:/, 'https:'))
-                }
+
+            // 3. 結果のGUI（State）への反映
+            if (bookInfo?.title) {
+                setNewTitle(bookInfo.title);
+                if (bookInfo.author) setNewAuthor(bookInfo.author);
+                if (bookInfo.coverUrl) setNewCoverUrl(bookInfo.coverUrl);
             } else {
-                alert('入力されたISBNの書籍情報が見つかりませんでした。手動で入力してください。')
+                alert('入力されたISBNの書籍情報が見つかりませんでした。手動で入力してください。');
             }
-        } catch (err: any) {
-            console.error('Error fetching ISBN:', err)
-            if (err.message === 'TOO_MANY_REQUESTS') {
-                alert('自動取得APIの利用制限(429)に達しました。しばらく待ってから試すか、手動で入力してください。')
-            } else {
-                alert('書籍情報の自動取得に失敗しました。手動で入力してください。')
-            }
+        } catch (err) {
+            console.error('Error in handleFetchIsbn:', err);
+            alert('書籍情報の自動取得に失敗しました。手動で入力してください。');
         } finally {
-            setIsFetchingIsbn(false)
+            setIsFetchingIsbn(false);
         }
     }
 
