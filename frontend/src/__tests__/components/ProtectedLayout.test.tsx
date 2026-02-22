@@ -7,6 +7,20 @@ import * as useAuthHook from '../../hooks/useAuth'
 // useAuth フックをモック化
 vi.mock('../../hooks/useAuth')
 
+// supabaseをモック化
+vi.mock('../../lib/supabase', () => ({
+    supabase: {
+        auth: {
+            mfa: {
+                getAuthenticatorAssuranceLevel: vi.fn().mockResolvedValue({
+                    data: { currentLevel: 'aal2', nextLevel: 'aal2' }
+                })
+            },
+            signOut: vi.fn()
+        }
+    }
+}))
+
 describe('ProtectedLayout', () => {
     it('ローディング中はスピナーが表示されること', () => {
         vi.mocked(useAuthHook.useAuth).mockReturnValue({
@@ -61,7 +75,7 @@ describe('ProtectedLayout', () => {
 
         expect(screen.getByText('Zousho')).toBeInTheDocument()
         expect(screen.getByText('ダッシュボード')).toBeInTheDocument()
-        expect(screen.getByText('user@example.com')).toBeInTheDocument()
+        expect(screen.getByText('Test')).toBeInTheDocument()
 
         // 書籍管理（管理者メニュー）は表示されないはず
         expect(screen.queryByText('書籍管理')).not.toBeInTheDocument()

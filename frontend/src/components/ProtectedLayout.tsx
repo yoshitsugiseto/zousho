@@ -12,8 +12,6 @@ export function ProtectedLayout() {
     useEffect(() => {
         const checkMfa = async () => {
             if (!session || !appUser) return
-            // 管理者はMFA不要
-            if (appUser.role === 'admin') return
 
             const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
 
