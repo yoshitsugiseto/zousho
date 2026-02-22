@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2563eb;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">蔵書管理システムへのご招待</div>
+        <p>あなたは「蔵書管理システム」のアカウントとして招待されました。</p>
+        <p>以下のボタンをクリックして、パスワードの初期設定と2段階認証の登録を行ってください。</p>
+
+        <a href="{{ .ConfirmationURL }}" class="button">招待を受け入れて設定を開始する</a>
+
+        <p style="font-size: 12px; color: #666; margin-top: 30px;">
+            ※このメールに心当たりがない場合は、お手数ですが破棄していただきますようお願いいたします。<br>
+            ※このリンクの有効期限は送信から24時間です。
+        </p>
+    </div>
+</body>
+
+</html>
