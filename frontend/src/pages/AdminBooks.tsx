@@ -294,9 +294,10 @@ export function AdminBooks() {
         }
     }
 
-    const filteredBooks = books.filter(b =>
-        b.title.includes(searchQuery) || b.author.includes(searchQuery)
-    )
+    const filteredBooks = books.filter(b => {
+        const query = searchQuery.toLowerCase()
+        return b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query)
+    })
 
     return (
         <div className="space-y-6">

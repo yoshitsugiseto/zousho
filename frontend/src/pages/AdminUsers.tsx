@@ -237,7 +237,7 @@ export function AdminUsers() {
                                     />
                                 </div>
                                 <p className="mt-2 text-sm text-gray-500">
-                                    入力したメールアドレス宛に、パスワード設定用の招待リンクが送信されます。（ローカル環境の場合はInbucketにて確認できます）
+                                    入力したメールアドレス宛に、パスワード設定用の招待リンクが送信されます。
                                 </p>
                             </div>
 
