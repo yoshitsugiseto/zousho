@@ -69,6 +69,7 @@ export function AdminBooks() {
     const [loading, setLoading] = useState(true)
     const [showAddModal, setShowAddModal] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const [selectedUserId, setSelectedUserId] = useState<string>('')
 
     // 新規登録用フォームステート
     const [newTitle, setNewTitle] = useState('')
@@ -294,9 +295,39 @@ export function AdminBooks() {
         }
     }
 
+    // 貸出中のユーザー一覧を抽出（重複排除）
+    const borrowingUsers = React.useMemo(() => {
+        const usersMap = new Map<string, { id: string, name: string }>()
+        books.forEach(book => {
+            book.activeLoans.forEach(loan => {
+                const uid = loan.user_id
+                const name = loan.user?.display_name || loan.user?.email || 'Unknown User'
+                if (!usersMap.has(uid)) {
+                    usersMap.set(uid, { id: uid, name })
+                }
+            })
+        })
+        console.log('borrowingUsers', Array.from(usersMap.values()))
+        return Array.from(usersMap.values())
+    }, [books])
+
     const filteredBooks = books.filter(b => {
         const query = searchQuery.toLowerCase()
-        return b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query)
+        const matchSearch = b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query)
+
+        if (!selectedUserId) return matchSearch
+
+        // 特定のユーザーで絞り込み
+        const isBorrowedByUser = b.activeLoans.some(loan => loan.user_id === selectedUserId)
+        return matchSearch && isBorrowedByUser
+    }).sort((a, b) => {
+        // 1. 誰かに貸出中の本
+        const aIsBorrowed = a.activeLoans.length > 0
+        const bIsBorrowed = b.activeLoans.length > 0
+        if (aIsBorrowed !== bIsBorrowed) return aIsBorrowed ? -1 : 1
+
+        // 2. 基本の並び順（作成日時の新しい順）
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
     return (
@@ -315,17 +346,32 @@ export function AdminBooks() {
                     </div>
                 </div>
 
-                <div className="mt-4 max-w-md relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-400" />
+                <div className="mt-4 flex flex-col sm:flex-row gap-3 relative rounded-md shadow-sm xl:w-2/3">
+                    <div className="relative flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border bg-white"
+                            placeholder="タイトルや著者で検索..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                    <input
-                        type="text"
-                        className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border bg-white"
-                        placeholder="タイトルや著者で検索..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+
+                    <div className="sm:w-64">
+                        <select
+                            value={selectedUserId}
+                            onChange={(e) => setSelectedUserId(e.target.value)}
+                            className="block w-full focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 rounded-md py-2 pl-3 pr-10 border bg-white appearance-none cursor-pointer"
+                        >
+                            <option value="">すべてのユーザー</option>
+                            {borrowingUsers.map(u => (
+                                <option key={u.id} value={u.id}>{u.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 

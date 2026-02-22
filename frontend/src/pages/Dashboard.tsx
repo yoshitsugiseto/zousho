@@ -150,6 +150,19 @@ export function Dashboard() {
     const filteredBooks = books.filter(b => {
         const query = searchQuery.toLowerCase()
         return b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query)
+    }).sort((a, b) => {
+        // 1. 自分が借りている本
+        const aIsBorrowing = a.myActiveLoans.length > 0
+        const bIsBorrowing = b.myActiveLoans.length > 0
+        if (aIsBorrowing !== bIsBorrowing) return aIsBorrowing ? -1 : 1
+
+        // 2. 在庫ありの本
+        const aIsAvailable = a.availableCount > 0
+        const bIsAvailable = b.availableCount > 0
+        if (aIsAvailable !== bIsAvailable) return aIsAvailable ? -1 : 1
+
+        // 3. 基本の並び順（作成日時の新しい順）
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
     const readingStatusOptions = [
