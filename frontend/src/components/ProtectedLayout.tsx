@@ -12,6 +12,8 @@ export function ProtectedLayout() {
     useEffect(() => {
         const checkMfa = async () => {
             if (!session || !appUser) return
+            // 管理者はMFA不要、またはテスト用スキップフラグが有効な場合はスキップ
+            if (appUser.role === 'admin' || import.meta.env.VITE_SKIP_MFA === 'true') return
 
             const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
 
